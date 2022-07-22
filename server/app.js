@@ -19,9 +19,9 @@ app.use(express.json());
 // All puppies in the database
 // No WHERE clause
 app.get('/puppies', async (req, res, next) => {
-    let allPuppies;
-
-    // Your code here
+    let allPuppies = await Puppy.findAll({
+        order: [['name', 'ASC']]
+    });
 
     res.json(allPuppies);
 });
@@ -31,9 +31,13 @@ app.get('/puppies', async (req, res, next) => {
 // All puppies that have been microchipped
 // WHERE clause with one exact value
 app.get('/puppies/chipped', async (req, res, next) => {
-    let chippedPuppies;
-
-    // Your code here
+    let chippedPuppies = await Puppy.findAll({
+        where: { microchipped: 1 },
+        order: [
+            ['age_yrs', 'DESC'],
+            ['name', 'ASC']
+        ]
+    });
 
     res.json(chippedPuppies);
 });
@@ -43,21 +47,27 @@ app.get('/puppies/chipped', async (req, res, next) => {
 // One puppy matching a name param
 // Finding one record by attribute
 app.get('/puppies/name/:name', async (req, res, next) => {
-    let puppyByName;
+    let params = req.params.name;
+    let puppyByName = await Puppy.findOne({
+    where: {name: params}
+    });
     
-    // Your code here
 
     res.json(puppyByName);
 })
-
 
 // BONUS STEP 5
 // All puppies with breed ending in 'Shepherd'
 // WHERE clause with a comparison
 app.get('/puppies/shepherds', async (req, res, next) => {
-    let shepherds;
-    
-    // Your code here
+    let shepherds = await Puppy.findAll({
+        where: {
+            breed: {[Op.substring]: 'Shepherd'}
+        },
+        order: [
+            ['name', 'DESC']
+        ] 
+    })
 
     res.json(shepherds);
 })
@@ -67,9 +77,18 @@ app.get('/puppies/shepherds', async (req, res, next) => {
 // All puppies with age_yrs <= 1yr and weight_lbs <= 20lbs
 // WHERE clause with multiple attributes and comparisons
 app.get('/puppies/tinybabies', async (req, res, next) => {
-    let tinyBabyPuppies;
-    
-    // Your code here
+    let tinyBabyPuppies = await Puppy.findAll({
+        where: {
+            [Op.and]: [
+                {age_yrs: {[Op.lte]: 1}},
+                {weight_lbs: {[Op.lte]: 20}}
+            ]
+        },
+        order: [
+            ['age_yrs', 'ASC'],
+            ['weight_lbs', 'ASC']
+        ]
+    });
 
     res.json(tinyBabyPuppies);
 })
@@ -79,10 +98,9 @@ app.get('/puppies/tinybabies', async (req, res, next) => {
 // One puppy matching an id param
 // Finding one record by primary key
 app.get('/puppies/:id', async (req, res, next) => {
-    let puppyById;
-    
-    // Your code here
-    
+    let params = req.params.id;
+    let puppyById = await Puppy.findByPk(params);
+
     res.json(puppyById);
 });
 
@@ -95,5 +113,5 @@ app.get('/', (req, res) => {
 });
 
 // Set port and listen for incoming requests - DO NOT MODIFY
-const port = 5000;
+const port = 5002;
 app.listen(port, () => console.log('Server is listening on port', port));
